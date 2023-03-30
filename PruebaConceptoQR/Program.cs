@@ -1,4 +1,5 @@
-﻿using System.Drawing;
+﻿using System.Diagnostics;
+using System.Drawing;
 using System.Text;
 using System.Web;
 using Newtonsoft.Json;
@@ -24,36 +25,31 @@ foreach (var page in pdfDocument.Pages)
     pdfPage.Render(bitmap, PageOrientations.Normal, RenderingFlags.LcdText);
     await using var bmpStream = bitmap.AsBmpStream(dpiX, dpiY);
 
+    Stopwatch stopwatch = new Stopwatch();
+
+    Console.WriteLine($"Tiempo transcurrido: {stopwatch.ElapsedMilliseconds} milisegundos");
+    stopwatch.Start();
     var resultadoMetodo1 = Metodo1(bmpStream);
+    stopwatch.Stop();
     Console.WriteLine("METODO 1");
     EscribirTodo(ProcessQRResults(resultadoMetodo1));
+    Console.WriteLine($"Tiempo transcurrido: {stopwatch.ElapsedMilliseconds} milisegundos");
 
+    // Reiniciar el stopwatch
+    stopwatch.Reset();
+    stopwatch.Start();
     var resultadoMetodo2 = Metodo2(bmpStream);
+    stopwatch.Stop();
     Console.WriteLine("\n\nMETODO 2");
     EscribirTodo(ProcessQRResults(resultadoMetodo2));
+    Console.WriteLine($"Tiempo transcurrido: {stopwatch.ElapsedMilliseconds} milisegundos");
 }
 
-void EscribirTodo(QrAFIPDtoResponse qrResponse)
-{
-    Console.WriteLine($"Version: {qrResponse.Version}");
-    Console.WriteLine($"Fecha: {qrResponse.Fecha}");
-    Console.WriteLine($"Cuit: {qrResponse.Cuit}");
-    Console.WriteLine($"PuntoDeVenta: {qrResponse.PuntoDeVenta}");
-    Console.WriteLine($"TipoComprobante: {qrResponse.TipoComprobante}");
-    Console.WriteLine($"NumeroComprobante: {qrResponse.NumeroComprobante}");
-    Console.WriteLine($"Importe: {qrResponse.Importe}");
-    Console.WriteLine($"Moneda: {qrResponse.Moneda}");
-    Console.WriteLine($"Cotizacion: {qrResponse.Cotizacion}");
-    Console.WriteLine($"TipoDocumento: {qrResponse.TipoDocumento}");
-    Console.WriteLine($"NumeroDocumento: {qrResponse.NumeroDocumento}");
-    Console.WriteLine($"TipoCodigoAutorizacion: {qrResponse.TipoCodigoAutorizacion}");
-    Console.WriteLine($"CodigoAutorizacion: {qrResponse.CodigoAutorizacion}");
-}
 
 Result? Metodo1(Stream bitmapStream)
 {
     //Utilizando ZXing.Net.Bindings.Windows.Compatibility para crear la Luminance
-    
+
     var image = new Bitmap(bitmapStream);
     // Obtener el formato de imagen
     var reader2 = new BarcodeReaderGeneric();
@@ -70,7 +66,7 @@ Result? Metodo1(Stream bitmapStream)
 Result? Metodo2(Stream bitmapStream)
 {
     //Creando la Luminance a mano
-    
+
     var luminance = obtenerLuminance(bitmapStream);
 
     // create a barcode reader instance
@@ -136,6 +132,23 @@ QrAFIPDtoResponse ProcessQRResults(Result? pageRes)
         TipoCodigoAutorizacion = qrAFIPDTO.TipoCodAut,
         CodigoAutorizacion = qrAFIPDTO.CodAut
     };
+}
+
+void EscribirTodo(QrAFIPDtoResponse qrResponse)
+{
+    Console.WriteLine($"Version: {qrResponse.Version}");
+    Console.WriteLine($"Fecha: {qrResponse.Fecha}");
+    Console.WriteLine($"Cuit: {qrResponse.Cuit}");
+    Console.WriteLine($"PuntoDeVenta: {qrResponse.PuntoDeVenta}");
+    Console.WriteLine($"TipoComprobante: {qrResponse.TipoComprobante}");
+    Console.WriteLine($"NumeroComprobante: {qrResponse.NumeroComprobante}");
+    Console.WriteLine($"Importe: {qrResponse.Importe}");
+    Console.WriteLine($"Moneda: {qrResponse.Moneda}");
+    Console.WriteLine($"Cotizacion: {qrResponse.Cotizacion}");
+    Console.WriteLine($"TipoDocumento: {qrResponse.TipoDocumento}");
+    Console.WriteLine($"NumeroDocumento: {qrResponse.NumeroDocumento}");
+    Console.WriteLine($"TipoCodigoAutorizacion: {qrResponse.TipoCodigoAutorizacion}");
+    Console.WriteLine($"CodigoAutorizacion: {qrResponse.CodigoAutorizacion}");
 }
 
 public class QrAFIPDtoResponse
